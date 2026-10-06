@@ -1,0 +1,37 @@
+# ── Python cache ───────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# ── Virtual environments ────────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── Environment variables — NEVER commit the real .env ─────────────────────────
+.env
+
+# ── IDE / OS files ──────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+
+# ── Streamlit cache ─────────────────────────────────────────────────────────────
+.streamlit/
+
+# ── Test & coverage artefacts ───────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── Build / dist ────────────────────────────────────────────────────────────────
+dist/
+build/
+*.egg-info/
+# -- Router test outputs
+router_output.txt
+router_result.txt

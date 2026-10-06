@@ -1,0 +1,18 @@
+# ── Core framework ─────────────────────────────────────────────────────────────
+pandas>=2.2.0          # DataFrames, CSV/Excel processing
+openpyxl>=3.1.5        # Read .xlsx files (required by pandas)
+python-dotenv>=1.0.0   # Load .env into os.environ
+
+# ── LLM & agent ────────────────────────────────────────────────────────────────
+openai>=1.30.0         # OpenAI API (router, engine, content generation, classifier)
+google-genai>=0.5.0    # Google Gemini API — new SDK (from google import genai)
+                       # NOTE: google-generativeai (old SDK) is no longer used.
+
+# ── String similarity (WF006 duplicate detection) ───────────────────────────
+rapidfuzz>=3.9.0       # Fast Levenshtein / fuzzy matching
+
+# ── Web UI ─────────────────────────────────────────────────────────────────────
+streamlit>=1.35.0      # Streamlit UI (src/app.py)
+
+# ── Utilities ──────────────────────────────────────────────────────────────────
+tabulate>=0.9.0        # Pretty-print tables in CLI output

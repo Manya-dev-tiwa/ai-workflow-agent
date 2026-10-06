@@ -1,0 +1,14 @@
+{
+  "_comment": "Sample input for WF004 - Product Description Generator. Note: 'material' is intentionally missing to test the missing-data handling rule (must NOT be invented by LLM).",
+  "product_name": "ErgoFlow Pro Lumbar Support Cushion",
+  "category": "Office & Ergonomics",
+  "attributes": [
+    "Adjustable strap fits most chairs",
+    "High-density memory foam",
+    "Removable and washable cover",
+    "Promotes healthy posture"
+  ],
+  "material": null,
+  "color": "Charcoal Grey",
+  "target_audience": "Remote workers and office professionals who sit for extended periods"
+}

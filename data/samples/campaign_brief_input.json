@@ -1,0 +1,16 @@
+{
+  "_comment": "Sample input for WF007 - Marketing Campaign Brief. Tests structured content generation with all required fields present.",
+  "campaign_goal": "Drive 20% sales increase for the new Autumn Home Office Collection during Q4 2026",
+  "product_list": [
+    "ErgoFlow Pro Lumbar Support Cushion",
+    "Monitor Arm Dual",
+    "Cable Management Box",
+    "Keyboard Wrist Rest Premium",
+    "Desk Organizer Pro"
+  ],
+  "target_audience": "Remote workers aged 25-45, predominantly based in urban areas, working from home 3+ days per week",
+  "promotion": "15% off all items + free shipping on orders over £50",
+  "start_date": "2026-11-01",
+  "end_date": "2026-12-31",
+  "channels": ["Email", "Instagram", "LinkedIn", "Google Ads"]
+}

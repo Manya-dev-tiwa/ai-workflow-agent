@@ -1,0 +1,11 @@
+{
+  "_comment": "Sample input for WF007 - Missing Fields Test. campaign_goal and dates are intentionally absent to test the missing-data handling path.",
+  "product_list": [
+    "ErgoFlow Pro Lumbar Support Cushion",
+    "Monitor Arm Dual",
+    "Cable Management Box"
+  ],
+  "target_audience": "Remote workers aged 25-45 working from home 3+ days per week",
+  "promotion": "10% off all items + free shipping",
+  "channels": ["Email", "Instagram"]
+}

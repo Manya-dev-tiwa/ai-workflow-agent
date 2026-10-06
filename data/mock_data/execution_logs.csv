@@ -1,0 +1,26 @@
+Run_ID,Workflow_ID,Workflow_Name,Start_Time,End_Time,Duration_Seconds,Status,Error_Message
+RUN-001,WF001,Inventory Restock Check,2026-10-01 08:00:00,2026-10-01 08:00:15,15,Success,
+RUN-002,WF001,Inventory Restock Check,2026-10-01 09:00:00,2026-10-01 09:00:18,18,Success,
+RUN-003,WF001,Inventory Restock Check,2026-10-01 10:00:00,2026-10-01 10:00:12,12,Success,
+RUN-004,WF002,Product Price Validation,2026-10-01 08:05:00,2026-10-01 08:05:45,45,Success,
+RUN-005,WF002,Product Price Validation,2026-10-01 09:05:00,2026-10-01 09:05:50,50,Success,
+RUN-006,WF003,Vendor File Processing,2026-10-01 08:10:00,2026-10-01 08:10:20,20,Failed,File encoding error - unsupported character set
+RUN-007,WF003,Vendor File Processing,2026-10-01 09:10:00,2026-10-01 09:10:55,55,Failed,Missing required column: SKU
+RUN-008,WF003,Vendor File Processing,2026-10-01 10:10:00,2026-10-01 10:10:18,18,Success,
+RUN-009,WF004,Product Description Generator,2026-10-01 08:15:00,2026-10-01 08:15:10,10,Success,
+RUN-010,WF004,Product Description Generator,2026-10-01 09:15:00,2026-10-01 09:15:09,9,Success,
+RUN-011,WF005,Customer Order Status,2026-10-01 08:20:00,2026-10-01 08:20:05,5,Success,
+RUN-012,WF005,Customer Order Status,2026-10-01 09:20:00,2026-10-01 09:20:06,6,Success,
+RUN-013,WF005,Customer Order Status,2026-10-01 10:20:00,2026-10-01 10:20:05,5,Failed,Order ID not found: ORD-9999
+RUN-014,WF006,Duplicate Product Detection,2026-10-01 08:25:00,2026-10-01 08:26:05,65,Success,
+RUN-015,WF006,Duplicate Product Detection,2026-10-01 09:25:00,2026-10-01 09:26:20,80,Success,
+RUN-016,WF007,Marketing Campaign Brief,2026-10-01 08:30:00,2026-10-01 08:30:20,20,Success,
+RUN-017,WF007,Marketing Campaign Brief,2026-10-01 09:30:00,2026-10-01 09:30:18,18,Success,
+RUN-018,WF008,SEO Keyword Classification,2026-10-01 08:35:00,2026-10-01 08:35:25,25,Success,
+RUN-019,WF008,SEO Keyword Classification,2026-10-01 09:35:00,2026-10-01 09:35:30,30,Success,
+RUN-020,WF009,Employee Task Assignment,2026-10-01 08:40:00,2026-10-01 08:40:12,12,Success,
+RUN-021,WF009,Employee Task Assignment,2026-10-01 09:40:00,2026-10-01 09:40:14,14,Success,
+RUN-022,WF010,Workflow Performance Report,2026-10-01 08:45:00,2026-10-01 08:45:28,28,Success,
+RUN-023,WF003,Vendor File Processing,2026-10-01 11:10:00,2026-10-01 11:10:22,22,Failed,Timeout connecting to validation service
+RUN-024,WF002,Product Price Validation,2026-10-01 10:05:00,2026-10-01 10:05:40,40,Success,
+RUN-025,WF006,Duplicate Product Detection,2026-10-01 10:25:00,2026-10-01 10:27:00,120,Success,

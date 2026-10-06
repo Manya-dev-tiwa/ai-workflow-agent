@@ -1,0 +1,6 @@
+Order_ID,Customer_Email,Customer_Name,Status,Items,Total_Amount,Shipment_Status,Tracking_Number,Estimated_Delivery
+ORD-1001,alice@example.com,Alice Johnson,Shipped,"Wireless Earbuds Pro x1, USB-C Cable x2",39.97,In Transit,TRACK-883421,2026-10-10
+ORD-1002,bob@example.com,Bob Smith,Processing,"Mechanical Keyboard x1",89.99,Not Shipped,,
+ORD-1003,carol@example.com,Carol White,Delivered,"Ergonomic Mouse x1, Desk Organizer x2",64.97,Delivered,TRACK-991022,2026-10-03
+ORD-1004,dave@example.com,Dave Brown,Cancelled,"Laptop Stand Aluminum x1",24.99,Cancelled,,
+ORD-1005,eve@example.com,Eve Davis,Shipped,"Portable SSD 1TB x1, HDMI Cable 2m x1",87.98,In Transit,TRACK-774510,2026-10-12

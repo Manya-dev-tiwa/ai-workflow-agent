@@ -1,0 +1,9 @@
+Employee_ID,Name,Role,Skills,Current_Tasks,Max_Capacity,Available
+EMP-001,Sarah Chen,Senior Developer,"Python,FastAPI,PostgreSQL,Docker",3,5,Yes
+EMP-002,Marcus Williams,Developer,"Python,Django,MySQL",4,5,Yes
+EMP-003,Priya Patel,Developer,"JavaScript,React,Node.js",5,5,No
+EMP-004,James Carter,Senior Developer,"Python,FastAPI,AWS,Docker,Kubernetes",1,5,Yes
+EMP-005,Fatima Al-Hassan,Junior Developer,"Python,Flask",2,4,Yes
+EMP-006,Tom Nguyen,DevOps Engineer,"Docker,Kubernetes,AWS,CI/CD",3,5,Yes
+EMP-007,Lisa Yamamoto,QA Engineer,"Testing,Selenium,Python",2,5,Yes
+EMP-008,Carlos Rivera,Developer,"Java,Spring Boot,PostgreSQL",4,5,Yes
