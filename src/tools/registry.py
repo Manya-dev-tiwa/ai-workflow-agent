@@ -118,3 +118,4 @@ from src.tools import data_calculator_aggregator # noqa: E402, F401
 from src.tools import entity_lookup_tool         # noqa: E402, F401
 from src.tools import text_similarity_matcher    # noqa: E402, F401
 from src.tools import report_formatter           # noqa: E402, F401
+from src.tools import list_data_files            # noqa: E402, F401

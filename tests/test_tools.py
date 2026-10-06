@@ -216,9 +216,21 @@ def test_report_formatter():
     assert "| SKU | Name |" in report
     assert "| 1 | Product A |" in report
 
+def test_list_data_files():
+    result = call_tool("list_data_files")
+    assert result["ok"] is True
+    assert isinstance(result["data"], list)
+    assert len(result["data"]) > 0
+    file_map = {item["file_path"]: item["columns"] for item in result["data"]}
+    assert "data/mock_data/employees.csv" in file_map
+    assert "data/mock_data/execution_logs.csv" in file_map
+    assert "Employee_ID" in file_map["data/mock_data/employees.csv"]
+    assert "Run_ID" in file_map["data/mock_data/execution_logs.csv"]
+
+
 def test_registry_schemas():
     schemas = get_all_schemas()
-    assert len(schemas) == 6
+    assert len(schemas) == 7
     names = [s["name"] for s in schemas]
     assert "file_data_loader" in names
     assert "tabular_validator_cleaner" in names
@@ -226,3 +238,4 @@ def test_registry_schemas():
     assert "entity_lookup_tool" in names
     assert "text_similarity_matcher" in names
     assert "report_formatter" in names
+    assert "list_data_files" in names

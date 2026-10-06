@@ -79,11 +79,16 @@ def file_data_loader(file_path: str, encoding: str = "utf-8") -> dict:
 
         # ── Does the file exist? ───────────────────────────────────────────────
         if not path.exists():
-            return {
-                "ok":    False,
-                "data":  None,
-                "error": f"File not found: '{file_path}'",
-            }
+            from src.config import ROOT_DIR
+            alt_path = ROOT_DIR / file_path
+            if alt_path.exists():
+                path = alt_path
+            else:
+                return {
+                    "ok":    False,
+                    "data":  None,
+                    "error": f"File not found: '{file_path}'",
+                }
 
         ext = path.suffix.lower()
 
@@ -108,6 +113,12 @@ def file_data_loader(file_path: str, encoding: str = "utf-8") -> dict:
 
         # ── JSON branch ────────────────────────────────────────────────────────
         elif ext == ".json":
+            if path.stat().st_size == 0:
+                return {
+                    "ok":    False,
+                    "data":  None,
+                    "error": f"JSON file '{file_path}' is empty.",
+                }
             with open(path, encoding=encoding) as fh:
                 payload = json.load(fh)
             return {"ok": True, "data": payload, "error": None}
