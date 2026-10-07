@@ -4,7 +4,7 @@ tests/test_workflows.py
 End-to-end and definition validation tests for all 10 business workflows.
 
 Ensures:
-  1. Registry correctly loads all 10 workflows (WF001 through WF010).
+  1. Registry correctly loads all 11 workflows (WF001 through WF010).
   2. Every test question from Excel has a matching workflow definition.
   3. Every workflow definition specifies required fields, steps, tools, and output.
   4. Engine execution logic executes offline mock tools safely for each workflow.
@@ -33,9 +33,9 @@ def test_all_10_workflows_loaded(registry):
 
 
 def test_all_test_questions_mapped(registry):
-    """Verify that all 10 test questions in Excel map to existing workflows."""
+    """Verify that all 11 test questions in Excel map to existing workflows."""
     test_questions = registry.get_test_questions()
-    assert len(test_questions) == 10
+    assert len(test_questions) == 11
     
     for tq in test_questions:
         wf_id = tq["workflow_id"]
