@@ -469,3 +469,37 @@ def test_input_file_resolution_explicit_and_hint():
     assert "product_input.json" in fake_llm_hint.prompts[0]
 
 
+def test_engine_system_prompt_injects_today_date():
+    """Verify that today's date from the system clock is injected into the engine prompt."""
+    import datetime
+    from unittest.mock import patch
+    from src.agent.engine import _build_system_prompt
+
+    # Save the real datetime.date before patching to avoid recursion
+    _real_date = datetime.date
+
+    with patch("src.agent.engine.datetime.date") as mock_date:
+        mock_date.today.return_value = _real_date(2026, 10, 6)
+        mock_date.side_effect = lambda *a, **kw: _real_date(*a, **kw)
+
+        prompt = _build_system_prompt(MINIMAL_WORKFLOW)
+        assert "Today's date is 2026-10-06." in prompt
+        assert "Always evaluate dates and calculate overdue/elapsed days relative to 2026-10-06." in prompt
+
+
+# ── Test 11: System prompt contains ID-fidelity rule ─────────────────────────
+
+def test_engine_system_prompt_contains_id_fidelity_rule():
+    """
+    Regression guard for the WF009 identifier mix-up bug:
+    the system prompt must instruct the LLM to copy every ID, name, and number
+    exactly as it appears in tool results — never to combine or guess identifiers.
+    Generic rule; no workflow_id conditional anywhere.
+    """
+    from src.agent.engine import _build_system_prompt
+
+    prompt = _build_system_prompt(MINIMAL_WORKFLOW)
+
+    assert "Copy every ID, name, and number exactly as it appears in the tool results." in prompt
+    assert "Never combine, guess, or invent identifiers." in prompt
+    assert "omit it rather than guess" in prompt

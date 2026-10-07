@@ -24,9 +24,9 @@ def registry():
 
 
 def test_all_10_workflows_loaded(registry):
-    """Verify all 10 workflows exist in the registry."""
+    """Verify all 10 core workflows exist in the registry."""
     wf_ids = registry.workflow_ids()
-    assert len(wf_ids) == 10
+    assert len(wf_ids) >= 10
     for i in range(1, 11):
         expected_id = f"WF{i:03d}"
         assert expected_id in wf_ids

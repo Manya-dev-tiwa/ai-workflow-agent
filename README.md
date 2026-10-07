@@ -6,13 +6,14 @@ A reusable, data-driven AI Agent system that dynamically loads business workflow
 
 ## 🌟 Key Features
 
-* **Excel as Single Source of Truth**: All 10 business workflows (triggers, steps, decision logic, tools, inputs, expected outputs) are loaded dynamically from `data/workflows.xlsx`. No workflow logic is hard-coded.
-* **7 Generic Atomic Tools**: Modular, caller-driven tools for data loading (`file_data_loader`), tabular validation/cleaning (`tabular_validator_cleaner`), numeric calculations (`data_calculator_aggregator`), entity lookup (`entity_lookup_tool`), text similarity (`text_similarity_matcher`), data file discovery (`list_data_files`), and report formatting (`report_formatter`).
+* **Excel as Single Source of Truth**: All 11 business workflows (triggers, steps, decision logic, tools, inputs, expected outputs) are loaded dynamically from `data/workflows.xlsx`. No workflow logic is hard-coded.
+* **7 Registered Atomic Tools**: Modular, caller-driven tools — all discovered at import time via `@register_tool`:
+  `file_data_loader`, `tabular_validator_cleaner`, `data_calculator_aggregator`, `entity_lookup_tool`, `text_similarity_matcher`, `list_data_files`, `report_formatter`.
 * **LLM Router & Reasoning Engine**:
   * **Router**: Classifies intent and extracts typed parameters using a dynamically constructed catalog prompt.
   * **Engine**: Step-by-step tool-selection loop that executes tools deterministically and handles errors, retries, and step caps.
-* **Zero Hard-Coded Conditionals**: Neither the Router nor the Engine contains `if workflow_id == "WF00X"` checks.
-* **Extensible Architecture**: Adding an 11th workflow requires only adding a row to `data/workflows.xlsx` (and optional input files).
+* **Zero Hard-Coded Conditionals**: Neither the Router nor the Engine contains `if workflow_id == "WF00X"` checks. (`grep -r 'workflow_id ==' src/` returns zero code hits — only a comment in a docstring.)
+* **Extensible Architecture**: Adding a 12th workflow requires only adding a row to `data/workflows.xlsx` (and optional input files). WF011 was built this way.
 * **Dual Interfaces**: Full-featured CLI and interactive Streamlit web dashboard.
 
 ---
@@ -51,7 +52,7 @@ AI-WORKFLOW-AGENT/
 │   └── test_workflows.py           # End-to-end workflow validation tests
 ├── scripts/
 │   ├── verify_registry.py          # Registry verification script
-│   └── run_all_workflows.py        # End-to-end test runner for all 10 workflows
+│   └── run_all_workflows.py        # End-to-end test runner for all 11 workflows
 ├── PLAN.md                         # Detailed design and architectural plan
 ├── SPEC.md                         # Original technical assignment specification
 ├── pytest.ini                      # Pytest configuration (pythonpath = .)
@@ -66,7 +67,8 @@ AI-WORKFLOW-AGENT/
 
 ### 1. Prerequisites
 * Python 3.10+ installed
-* An OpenAI API key (`OPENAI_API_KEY`) or Google Gemini API key (`GEMINI_API_KEY`)
+* A **Google Gemini API key** (`GEMINI_API_KEY`) — default provider (free tier available at [aistudio.google.com](https://aistudio.google.com/app/apikey))
+* *Alternatively*: An OpenAI API key (`OPENAI_API_KEY`) — set `LLM_PROVIDER=openai` in `.env`
 
 ### 2. Virtual Environment Setup
 ```bash
@@ -147,7 +149,7 @@ Open [http://localhost:8501](http://localhost:8501) in your browser. The UI feat
 * **Panel A**: Selected workflow details, trigger, extracted parameters, and router rationale.
 * **Panel B**: Interactive execution trace table showing step sequence, tools invoked, status, and output.
 * **Panel C**: Rendered final output.
-* **Quick Selector**: Pre-loaded test request dropdown for all 10 workflows.
+* **Quick Selector**: Pre-loaded test request dropdown for all 11 workflows.
 
 ---
 
@@ -158,18 +160,18 @@ Run plain `pytest` directly:
 ```bash
 pytest
 ```
-*Executes 40 tests across tools, router, engine, and workflow registry.*
+*Executes **42 tests** across tools, router, engine, and workflow registry.*
 
 ### Verify Excel Registry Loading
 ```bash
 python scripts/verify_registry.py
 ```
 
-### Execute All 10 Workflows End-to-End
+### Execute All 11 Workflows End-to-End
 ```bash
 python scripts/run_all_workflows.py
 ```
-*Runs all 10 test requests sequentially and saves individual Markdown execution reports into `examples/outputs/`.*
+*Runs all 11 test requests sequentially and saves individual Markdown execution reports into `examples/outputs/`.*
 
 > **Note**: On the free Google Gemini API tier (15 requests/minute limit), running `run_all_workflows.py` can take several minutes due to rate-limit throttling and exponential backoff retries.
 
@@ -189,12 +191,15 @@ python scripts/run_all_workflows.py
 | **WF008** | SEO Keyword Classification | *"Classify these keywords and map them to pages."* | `file_data_loader`, `report_formatter` |
 | **WF009** | Employee Task Assignment | *"Assign this urgent task to the best available developer."* | `file_data_loader`, `entity_lookup_tool`, `report_formatter` |
 | **WF010** | Workflow Performance Report | *"Which workflows are failing most often?"* | `file_data_loader`, `data_calculator_aggregator`, `report_formatter` |
+| **WF011** | Overdue Orders Report | *"Which orders are overdue?"* | `file_data_loader`, `data_calculator_aggregator`, `report_formatter` |
 
 ---
 
-## ➕ Extensibility Model: Adding an 11th Workflow
+## ➕ Extensibility Model: Adding a 12th Workflow
 
-To add a new workflow (e.g., `WF011` - Customer Churn Risk Analysis):
-1. **Add a Row in `data/workflows.xlsx`**: Add `WF011`, its name, trigger, inputs, steps, decision logic, tools, and expected output.
-2. **Add Mock Data (if needed)**: Place any required dataset in `data/mock_data/` or `data/samples/`.
-3. **No Code Changes Required**: The Router automatically includes `WF011` in its dynamic catalog prompt, and the Engine executes it using the existing atomic tools.
+WF011 (Overdue Orders) demonstrates the model end-to-end — it required:
+1. **One Excel row** in `data/workflows.xlsx` — `WF011`, trigger phrase, steps, tools, and expected output.
+2. **Mock data** (`data/mock_data/orders.csv`) — no schema changes to any tool.
+3. **No code changes** — the Router automatically includes WF011 in its dynamic catalog prompt; the Engine executes it with the existing atomic tools. Real-date injection (comparing `Estimated_Delivery` against today's date) is handled generically by the Engine's date-context prompt, not a workflow-specific conditional.
+
+To add a 12th workflow, follow the same three steps.

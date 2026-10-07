@@ -239,3 +239,66 @@ def test_registry_schemas():
     assert "text_similarity_matcher" in names
     assert "report_formatter" in names
     assert "list_data_files" in names
+
+
+# ── data_calculator_aggregator date_diff / days_overdue with mocked date ──────────
+
+def test_calculator_days_overdue_mocked_today():
+    import datetime
+    from unittest.mock import patch, MagicMock
+
+    test_rows = [
+        {"Order_ID": "ORD-1006", "Customer_Name": "Frank Miller", "Status": "Shipped", "Estimated_Delivery": "2026-09-28"},
+        {"Order_ID": "ORD-1007", "Customer_Name": "Grace Lee", "Status": "Shipped", "Estimated_Delivery": "2026-10-01"},
+        {"Order_ID": "ORD-1001", "Customer_Name": "Alice Johnson", "Status": "Shipped", "Estimated_Delivery": "2026-10-10"},
+        {"Order_ID": "ORD-1002", "Customer_Name": "Bob Smith", "Status": "Processing", "Estimated_Delivery": ""},
+    ]
+
+    # Save the real datetime.date before patching to avoid recursion in side_effect
+    _real_date = datetime.date
+
+    # Patch system clock date to 2026-10-06
+    with patch("src.tools.data_calculator_aggregator.datetime.date") as mock_date:
+        mock_date.today.return_value = _real_date(2026, 10, 6)
+        mock_date.side_effect = lambda *a, **kw: _real_date(*a, **kw)
+
+        result = call_tool(
+            "data_calculator_aggregator",
+            rows=test_rows,
+            operation="days_overdue",
+            column_a="Estimated_Delivery",
+        )
+
+        assert result["ok"] is True
+        data = result["data"]
+        assert data["reference_date"] == "2026-10-06"
+        assert data["flagged_count"] == 2
+        assert data["skipped_count"] == 1
+
+        flagged_by_id = {r["Order_ID"]: r["days_overdue"] for r in data["flagged_rows"]}
+        # On 2026-10-06:
+        # ORD-1006 (due 2026-09-28): 8 days overdue
+        # ORD-1007 (due 2026-10-01): 5 days overdue
+        assert flagged_by_id["ORD-1006"] == 8
+        assert flagged_by_id["ORD-1007"] == 5
+
+        # Check all calculated rows
+        calc_by_id = {r["Order_ID"]: r["days_diff"] for r in data["calculated_rows"]}
+        assert calc_by_id["ORD-1001"] == -4  # due in future, not overdue
+
+    # Test with a different patched date to ensure days are computed from clock, not guessed
+    with patch("src.tools.data_calculator_aggregator.datetime.date") as mock_date:
+        mock_date.today.return_value = _real_date(2026, 10, 8)
+        mock_date.side_effect = lambda *a, **kw: _real_date(*a, **kw)
+
+        result = call_tool(
+            "data_calculator_aggregator",
+            rows=test_rows,
+            operation="date_diff",
+            column_a="Estimated_Delivery",
+        )
+        assert result["ok"] is True
+        flagged_by_id = {r["Order_ID"]: r["days_overdue"] for r in result["data"]["flagged_rows"]}
+        assert flagged_by_id["ORD-1006"] == 10
+        assert flagged_by_id["ORD-1007"] == 7
+

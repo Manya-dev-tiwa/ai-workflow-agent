@@ -39,6 +39,7 @@ Return value (EngineResult dataclass):
 -----------------------------------------------------------------------------
 """
 
+import datetime
 import json
 import logging
 import textwrap
@@ -162,11 +163,16 @@ def _resolve_input_files(
 
 # ── Prompt builders ────────────────────────────────────────────────────────────
 
-def _build_system_prompt(workflow: Dict[str, Any], input_file: Optional[str] = None) -> str:
+def _build_system_prompt(
+    workflow: Dict[str, Any],
+    input_file: Optional[str] = None,
+    current_date: Optional[str] = None,
+) -> str:
     """
     Build the engine's system prompt entirely from Excel data.
     Contains: workflow name, steps, decision logic, expected output, tool schemas.
     """
+    today_str = current_date or datetime.date.today().isoformat()
     tool_schemas_json = json.dumps(get_all_schemas(), indent=2)
 
     attached_file_section = ""
@@ -179,6 +185,7 @@ def _build_system_prompt(workflow: Dict[str, Any], input_file: Optional[str] = N
         )
 
     prompt = f"""You are an AI execution engine for business workflow automation.
+Today's date is {today_str}.
 
 == CURRENT WORKFLOW ==
 Name            : {workflow.get('workflow_name', '')}
@@ -221,7 +228,9 @@ Form 3 — workflow complete, return final answer:
 }}
 
 == STRICT RULES ==
+- Today's date is {today_str}. Always evaluate dates and calculate overdue/elapsed days relative to {today_str}.
 - Never invent data. If a record is not found, say so clearly in your answer.
+- Copy every ID, name, and number exactly as it appears in the tool results. Never combine, guess, or invent identifiers. If you are unsure of an ID, omit it rather than guess.
 - When an input file is attached or provided by the user, you MUST read it with the file loader tool (file_data_loader) BEFORE using ask_user.
 - Only call ask_user for fields that are still missing after reading the file, and name exactly those fields.
 - If no input file was attached or provided, and required business inputs or specifications (such as campaign goal, target audience, promotion details, dates, or task instructions) are missing, you MUST call ask_user naming exactly the missing fields, following the workflow's Decision Logic. Do NOT search sample folders for user inputs.
@@ -317,16 +326,18 @@ class WorkflowEngine:
         params: Dict[str, Any],
         input_file: Optional[str] = None,
         max_steps: int = MAX_STEPS,
+        current_date: Optional[str] = None,
     ) -> EngineResult:
         """
         Execute a workflow and return a structured EngineResult.
 
         Parameters
         ----------
-        workflow   : dict from WorkflowRegistry.get_workflow()
-        params     : parameters extracted by the router
-        input_file : optional file path that overrides the default input file
-        max_steps  : maximum number of tool calls allowed
+        workflow     : dict from WorkflowRegistry.get_workflow()
+        params       : parameters extracted by the router
+        input_file   : optional file path that overrides the default input file
+        max_steps    : maximum number of tool calls allowed
+        current_date : optional ISO date string overriding datetime.date.today()
         """
         wf_id   = workflow.get("workflow_id", "UNKNOWN")
         wf_name = workflow.get("workflow_name", "Unknown Workflow")
@@ -340,7 +351,7 @@ class WorkflowEngine:
         attached_file = input_file or params.get("input_file") or params.get("file_path")
 
         # Build the fixed system prompt (stays the same for every loop turn)
-        system_prompt = _build_system_prompt(workflow, input_file=attached_file)
+        system_prompt = _build_system_prompt(workflow, input_file=attached_file, current_date=current_date)
 
         # History accumulates tool results so the LLM can see what has happened
         history: List[Dict] = []

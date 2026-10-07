@@ -25,6 +25,7 @@ Return shape:
 ─────────────────────────────────────────────────────────────────────────────
 """
 
+import datetime
 from src.tools.registry import register_tool
 
 
@@ -32,12 +33,12 @@ from src.tools.registry import register_tool
 _SCHEMA = {
     "name": "data_calculator_aggregator",
     "description": (
-        "Perform numeric calculations on a table (list of row-dicts). "
-        "Supports three operations: "
-        "'compare_columns' (flag rows where two numeric columns differ by more "
-        "than a percentage threshold), "
+        "Perform numeric or date calculations on a table (list of row-dicts). "
+        "Supports operations: "
+        "'compare_columns' (flag rows where two numeric columns differ by more than a percentage threshold), "
         "'below_threshold' (flag rows where a numeric column is below a value), "
-        "'aggregate' (count/sum/average/min/max grouped by a column)."
+        "'aggregate' (count/sum/average/min/max grouped by a column), "
+        "'date_diff' / 'days_overdue' (compute days difference between a date column and today's real system date, or between two date columns. If comparing against today, uses the system date automatically)."
     ),
     "parameters": {
         "type": "object",
@@ -50,7 +51,7 @@ _SCHEMA = {
                 "type": "string",
                 "description": (
                     "Which calculation to run. "
-                    "One of: 'compare_columns', 'below_threshold', 'aggregate'."
+                    "One of: 'compare_columns', 'below_threshold', 'aggregate', 'date_diff', 'days_overdue'."
                 ),
             },
             "column_a": {
@@ -58,21 +59,25 @@ _SCHEMA = {
                 "description": (
                     "For 'compare_columns': name of the first numeric column "
                     "(e.g. the internal / reference price). "
-                    "For 'below_threshold': the column to compare against the threshold."
+                    "For 'below_threshold': the column to compare against the threshold. "
+                    "For 'date_diff'/'days_overdue': the date column to compare (e.g. 'Estimated_Delivery')."
                 ),
             },
             "column_b": {
                 "type": "string",
                 "description": (
                     "For 'compare_columns': name of the second numeric column "
-                    "(e.g. the vendor / comparison price)."
+                    "(e.g. the vendor / comparison price). "
+                    "For 'date_diff'/'days_overdue': optional second date column to compare against. "
+                    "If omitted, compares against today's real system date."
                 ),
             },
             "threshold": {
                 "type": "number",
                 "description": (
                     "For 'compare_columns': percentage difference threshold (e.g. 10 means 10%). "
-                    "For 'below_threshold': the minimum acceptable numeric value."
+                    "For 'below_threshold': the minimum acceptable numeric value. "
+                    "For 'date_diff'/'days_overdue': minimum days threshold to flag (default 0, flagging past-due / overdue dates)."
                 ),
             },
             "group_by_column": {
@@ -99,7 +104,13 @@ _SCHEMA = {
                 "type": "string",
                 "description": (
                     "Optional column to include in flagged-row output as an identifier "
-                    "(e.g. 'SKU', 'Run_ID'). Helps the caller understand which rows failed."
+                    "(e.g. 'SKU', 'Order_ID', 'Run_ID'). Helps the caller understand which rows failed."
+                ),
+            },
+            "date_column": {
+                "type": "string",
+                "description": (
+                    "Optional alias for column_a when running 'date_diff' or 'days_overdue'."
                 ),
             },
         },
@@ -116,6 +127,35 @@ def _to_float(value) -> float | None:
         return None
 
 
+def _parse_date(value) -> datetime.date | None:
+    """Try to parse a date from string/date/datetime; return None on failure."""
+    if not value:
+        return None
+    # Guard isinstance() against cases where datetime.date is patched to a
+    # MagicMock during unit tests — isinstance() raises TypeError in that case.
+    try:
+        if isinstance(value, datetime.datetime):
+            return value.date()
+        if isinstance(value, datetime.date):
+            return value
+    except TypeError:
+        pass
+    s = str(value).strip()
+    if not s:
+        return None
+    for fmt in ("%Y-%m-%d", "%Y/%m/%d", "%m/%d/%Y", "%d/%m/%Y"):
+        try:
+            return datetime.datetime.strptime(s[:10], fmt).date()
+        except Exception:
+            pass
+    try:
+        s_date = s.split("T")[0].split(" ")[0]
+        return datetime.date.fromisoformat(s_date)
+    except Exception:
+        pass
+    return None
+
+
 @register_tool(schema=_SCHEMA)
 def data_calculator_aggregator(
     rows: list,
@@ -127,6 +167,7 @@ def data_calculator_aggregator(
     value_column: str = "",
     filter_values: list = None,
     id_column: str = "",
+    date_column: str = "",
 ) -> dict:
     """
     Perform numeric calculations on a list-of-dicts table.
@@ -306,6 +347,65 @@ def data_calculator_aggregator(
                 "error": None,
             }
 
+        # ── Operation: date_diff / days_overdue ────────────────────────────────
+        elif operation in ("date_diff", "days_diff", "date_difference", "days_overdue", "compare_dates"):
+            target_col = column_a or date_column
+            if not target_col:
+                return {
+                    "ok":    False,
+                    "data":  None,
+                    "error": f"'{operation}' requires 'column_a' (or 'date_column') specifying the date column.",
+                }
+
+            if threshold is None:
+                threshold = 0.0
+
+            # Compute from real system date clock
+            system_today = datetime.date.today()
+            flagged = []
+            calculated = []
+            skipped = 0
+
+            for row in rows:
+                val_a = row.get(target_col)
+                d_a = _parse_date(val_a)
+                if d_a is None:
+                    skipped += 1
+                    continue
+
+                if column_b and column_b in row:
+                    d_b = _parse_date(row.get(column_b))
+                    if d_b is None:
+                        skipped += 1
+                        continue
+                    days = (d_b - d_a).days
+                else:
+                    # Computed from the real system date (system_today - due_date)
+                    # Positive value indicates the due date is in the past (overdue)
+                    days = (system_today - d_a).days
+
+                entry = dict(row)
+                entry["days_diff"] = days
+                entry["days_overdue"] = days
+                calculated.append(entry)
+
+                if days > threshold:
+                    flagged.append(entry)
+
+            return {
+                "ok": True,
+                "data": {
+                    "reference_date": system_today.isoformat(),
+                    "flagged_rows":   flagged,
+                    "flagged_count":  len(flagged),
+                    "calculated_rows": calculated,
+                    "skipped_count":  skipped,
+                    "threshold_days": threshold,
+                    "column":         target_col,
+                },
+                "error": None,
+            }
+
         # ── Unknown operation ──────────────────────────────────────────────────
         else:
             return {
@@ -313,7 +413,7 @@ def data_calculator_aggregator(
                 "data":  None,
                 "error": (
                     f"Unknown operation '{operation}'. "
-                    "Supported: 'compare_columns', 'below_threshold', 'aggregate'."
+                    "Supported: 'compare_columns', 'below_threshold', 'aggregate', 'date_diff', 'days_overdue'."
                 ),
             }
 

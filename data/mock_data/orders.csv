@@ -4,3 +4,5 @@ ORD-1002,bob@example.com,Bob Smith,Processing,"Mechanical Keyboard x1",89.99,Not
 ORD-1003,carol@example.com,Carol White,Delivered,"Ergonomic Mouse x1, Desk Organizer x2",64.97,Delivered,TRACK-991022,2026-10-03
 ORD-1004,dave@example.com,Dave Brown,Cancelled,"Laptop Stand Aluminum x1",24.99,Cancelled,,
 ORD-1005,eve@example.com,Eve Davis,Shipped,"Portable SSD 1TB x1, HDMI Cable 2m x1",87.98,In Transit,TRACK-774510,2026-10-12
+ORD-1006,frank@example.com,Frank Miller,Shipped,"Webcam HD 1080p x1",49.99,In Transit,TRACK-662309,2026-09-28
+ORD-1007,grace@example.com,Grace Lee,Shipped,"Monitor Arm Dual x1, Cable Management Box x1",72.50,In Transit,TRACK-550187,2026-10-01
